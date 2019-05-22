@@ -1,0 +1,28 @@
+{
+    "name": "ukoc/socialist-mining",
+    "description": "A simple test plugin for SeaT",
+    "type": "seat-plugin",
+    "license": "GPL-2.0",
+    "authors": [
+        {
+            "name": "UKOC",
+            "email": "thereshouldbeaukocadresshere@gmail.com"
+        }
+    ],
+    "autoload": {
+      "psr-4": {
+        "UKOC\\Seat\\SocialistMining\\": "src/"
+      }
+    },
+    "extra": {
+        "laravel": {
+          "providers": [
+            "UKOC\\Seat\\SocialistMining\\SocialistMiningServiceProvider"
+          ]
+        }
+    },
+    "minimum-stability": "stable",
+    "require": {
+        "eveseat/web": "3.0.*"
+    }
+}
