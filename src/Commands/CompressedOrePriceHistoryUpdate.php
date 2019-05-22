@@ -11,7 +11,7 @@ use UKOC\Seat\SocialistMining\Jobs\CompressedOrePriceHistoryJob;
 
 class CompressedOrePriceHistoryUpdate extends Command {
     protected $signature = 'esi:CompressedOrePriceHistory:update';
-    protected $description = 'Queue a job which will fetch price data from evepraisal';
+    protected $description = 'Queue a job which will fetch and store historical price data for compressed ores';
     public function handle()
     {
         CompressedOrePriceHistoryJob::dispatch();
