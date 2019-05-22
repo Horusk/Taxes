@@ -21,3 +21,4 @@ When you have updated the composer.json you can install the plugin by running *c
 You can then run *php artisan esi:CompressedOrePriceHistory:update* to trigger the job manually.
 
 **Note** that I have experienced issues where i had to restart to get code changes reflected on the site, or even delete the var/www/seat/vendor/ukoc-mining folder and reinstall plugin with *composer install*.
+
