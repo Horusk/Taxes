@@ -16,4 +16,8 @@ if you never done it before, open the composer.json and add this before the last
 	"url": "**mylocal/repofolder/**"
 }]*
 
-When you have updated the composer.json you can run *php artisan esi:CompressedOrePriceHistory:update* to trigger the job manually.
+When you have updated the composer.json you can install the plugin by running *composer require "ukoc/socialistmining @dev"*, you should get a message that it was "symlinked".
+
+You can then run *php artisan esi:CompressedOrePriceHistory:update* to trigger the job manually.
+
+**Note** that I have experienced issues where i had to restart to get code changes reflected on the site, or even delete the var/www/seat/vendor folder and reinstall plugins.
