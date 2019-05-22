@@ -1,5 +1,5 @@
 ![SeAT](http://i.imgur.com/aPPOxSK.png)
-# package-example-sunk1ller-test
+# UKOC - Mining Taxes
 
-## This repository contains a copy of an example SeAT package
-Please use the main SeAT repository [here](https://github.com/eveseat/seat) for issues.
+## This repository is based on the SeAT plugin example
+//Todo: documentation :)
