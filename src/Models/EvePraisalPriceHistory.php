@@ -1,6 +1,6 @@
 <?php
 /**
- * User: Christian Eliasson <christianeliasson1985@gmail.com>
+ * User: this file is obsolete
  * Date: 16/05/2019
  * Time: 14:42
  */
