@@ -11,16 +11,11 @@ UKOC - 693378155
 <div class="col-md-12">
     <!-- Custom Tabs -->
 	<div>
-	<input type="text" id="corp_id" value="1579752358"/>
-	<a href="#" data-submit="load">load</a>
+  <div class="input-group">
+    <input type="text" class="form-control pull-right" id="datefilter">
+  </div>
 	</div>
     <div class="nav-tabs-custom">
-      <ul class="nav nav-tabs">
-        <li class="active"><a href="#" data-toggle="tab" data-all="true">{{ trans_choice('web::seat.character', 2) }}</a></li>
-        @if(auth()->user()->has('character.list', false))
-          <li><a href="#" data-toggle="tab" data-all="false">SeAT Group only</a></li>
-        @endif
-      </ul>
       <div class="tab-content">
           <table class="table compact table-condensed table-hover table-responsive"
                  id="socialistmining-table" data-page-length=100>
@@ -45,24 +40,32 @@ UKOC - 693378155
 @stop
 
 @push('javascript')
-
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
   <script>
-    $('a[data-submit="load"]').on('click', function () {
-      character_list.draw();
-    });
-    //function filtered() {
-      //return !$("div.nav-tabs-custom > ul > li.active > a").data('all');
-    //}
+    $(document).ready(function(){      
+      selectedStartDate = moment().subtract(1,'month').startOf('month');
+      selectedEndDate = moment().subtract(1,'month').endOf('month');
+        $('#datefilter').daterangepicker({
+          viewMode:1,
+          startDate: selectedStartDate,
+          endDate: selectedEndDate
+        }, function(start,end,label){
+          selectedStartDate = start;
+          selectedEndDate = end;
+          character_list.draw();
+        });
+    
+
     var character_list = $('table#socialistmining-table').DataTable({
       processing      : true,
       serverSide      : true,
       ajax            : {
         url : '{{ route('socialistmining.corp.ledger') }}',
         data: function ( d ) {
-		d.$corporation_id = $('#corp_id').val();
-		d.$year = JSON.stringify(2019);
-		d.$month = JSON.stringify(4);
-		d.$get = true;
+		      d.$startDate = selectedStartDate.startOf('day').format('YYYY-MM-DD');
+		      d.$endDate = selectedEndDate.endOf('day').format('YYYY-MM-DD');
+		      d.$get = true;
       }},
       columns         : [
         {data: 'character_id', name: 'character_id'},
@@ -95,6 +98,7 @@ UKOC - 693378155
         ids_to_names();
       },
     });
+  });
 	function addCommas(nStr)
 {
 	nStr += '';

@@ -113,11 +113,14 @@ class SocialistMiningController extends Controller
             ->leftJoin('historical_prices as compressedPrice', function ($join) {
                 $join->on('compressedPrice.type_id', '=', 'compressedTypes.typeID')
                      ->on('compressedPrice.date', '=', 'character_minings.date');
-            })
+            });
             //->where('character_id', $request->input('$corporation_id'))
-            ->where('year',2019)
-            ->where('month', 4)
-            ->groupBy('character_id', 'miningDate', 'typeName');
+            //->where('year',2019)
+            //->where('month', 4)
+        if($request['$startDate'] && $request['$endDate'])
+            $ledger = $ledger->whereBetween('character_minings.date', [$request['$startDate'],$request['$endDate']]);
+
+        $ledger = $ledger->groupBy('character_id', 'miningDate', 'typeName');
 
 			//if(!$request->$get)
 				//return $ledger;
