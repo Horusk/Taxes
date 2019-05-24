@@ -107,20 +107,23 @@ class SocialistMiningController extends Controller
 		'character_minings.date as miningDate', 
 		DB::raw('SUM(quantity) as quantity'), 
 		DB::raw('ROUND(SUM(quantity)*0.01,2) as compressed_quantity'), 
-		DB::raw('ROUND(SUM(quantity * compressedPrice.adjusted_price),2) as amounts'))
+		DB::raw('ROUND(SUM(quantity * originalPrice.adjusted_price),2) as originalAmounts'),
+        'usr.name as userName',
+        'usr.group_id as userGroupId')
             ->join('invTypes as originalTypes', 'originalTypes.typeID', 'character_minings.type_id')
 			->join('invTypes as compressedTypes', function($join){$join->on('compressedTypes.typeName', 'like','originalTypes.typeName');})
-            ->leftJoin('historical_prices as compressedPrice', function ($join) {
-                $join->on('compressedPrice.type_id', '=', 'compressedTypes.typeID')
-                     ->on('compressedPrice.date', '=', 'character_minings.date');
-            });
+            ->leftJoin('historical_prices as originalPrice', function ($join) {
+                $join->on('originalPrice.type_id', '=', 'compressedTypes.typeID')
+                     ->on('originalPrice.date', '=', 'character_minings.date');
+            })
+            ->join('users as usr','usr.id', 'character_minings.character_id');
             //->where('character_id', $request->input('$corporation_id'))
             //->where('year',2019)
             //->where('month', 4)
         if($request['$startDate'] && $request['$endDate'])
             $ledger = $ledger->whereBetween('character_minings.date', [$request['$startDate'],$request['$endDate']]);
 
-        $ledger = $ledger->groupBy('character_id', 'miningDate', 'typeName');
+        $ledger = $ledger->groupBy('userName', 'miningDate', 'typeName');
 
 			//if(!$request->$get)
 				//return $ledger;

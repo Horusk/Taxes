@@ -21,7 +21,7 @@ UKOC - 693378155
                  id="socialistmining-table" data-page-length=100>
             <thead>
             <tr>
-              <th>character_id</th>
+              <th>Player</th>
               <th>typeName</th>
               <th>miningDate</th>
               <th>quantity</th>
@@ -68,31 +68,40 @@ UKOC - 693378155
 		      d.$get = true;
       }},
       columns         : [
-        {data: 'character_id', name: 'character_id'},
+        {data: 'userName', name: 'userName'},
         {data: 'typeName', name: 'typeName'},
         {data: 'miningDate', name: 'miningDate'},
         {data: 'quantity', name: 'quantity'},
         {data: 'compressed_quantity', name: 'compressed_quantity'},
-        {data: 'amounts', name: 'amounts'}
+        {data: 'originalAmounts', name: 'originalAmounts'}
       ],
 	  orderFixed:[0,'asc'],
 	  rowGroup: {
             startRender: function ( rows, group ) {
-                var amountsSum = rows
+                var originalAmountsSum = rows
                     .data()
-                    .pluck('amounts')
+                    .pluck('originalAmounts')
                     .reduce( function (a, b) {
                         return (Number(!a?0:a) + Number(!b?0:b)).toFixed(2);
                     }, 0);
                 //amountsAvg = $.fn.dataTable.render.number(',', '.', 0, '$').display( amountsAvg );
- 
- 
+                var userNames = rows
+                    .data()
+                    .pluck('userName')
+                    .unique();
+                console.log(userNames);
+                console.log(userNames[0]);
+                console.log(userNames[1]);
+                var userNamesFormatted = '';
+                for(var userNameIndex = 0; userNameIndex < userNames.length; userNameIndex++)
+                  userNamesFormatted += userNames[userNameIndex] + ' ';
+                
                 return $('<tr/>')
-                    .append( '<td colspan="5">Sum for '+group+'</td>' )
-                    .append( '<td>'+ addCommas(amountsSum) +'</td>' )
+                    .append( '<td colspan="5">Sum for '+userNamesFormatted+'</td>' )
+                    .append( '<td>'+ addCommas(originalAmountsSum) +'</td>' )
                     .append( '<td/>' );
             },
-            dataSrc: 'character_id'},
+            dataSrc: 'userGroupId'},
       drawCallback: function () {
         $("img").unveil(100);
         ids_to_names();
