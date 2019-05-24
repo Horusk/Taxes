@@ -24,9 +24,10 @@ UKOC - 693378155
               <th>Player</th>
               <th>typeName</th>
               <th>miningDate</th>
-              <th>quantity</th>
-              <th>compressed_quantity</th>
-              <th>amounts</th>
+              <th>originalQuantity</th>
+              <th>originalAmounts</th>
+              <th>compressedQuantity</th>
+              <th>compressedAmounts</th>
               <th></th>
             </tr>
             </thead>
@@ -72,8 +73,9 @@ UKOC - 693378155
         {data: 'typeName', name: 'typeName'},
         {data: 'miningDate', name: 'miningDate'},
         {data: 'quantity', name: 'quantity'},
+        {data: 'originalAmounts', name: 'originalAmounts'},
         {data: 'compressed_quantity', name: 'compressed_quantity'},
-        {data: 'originalAmounts', name: 'originalAmounts'}
+        {data: 'compressedAmounts', name: 'compressedAmounts'}
       ],
 	  orderFixed:[0,'asc'],
 	  rowGroup: {
@@ -81,6 +83,13 @@ UKOC - 693378155
                 var originalAmountsSum = rows
                     .data()
                     .pluck('originalAmounts')
+                    .reduce( function (a, b) {
+                        return (Number(!a?0:a) + Number(!b?0:b)).toFixed(2);
+                    }, 0);
+
+                var compressedAmountsSum = rows
+                    .data()
+                    .pluck('compressedAmounts')
                     .reduce( function (a, b) {
                         return (Number(!a?0:a) + Number(!b?0:b)).toFixed(2);
                     }, 0);
@@ -95,10 +104,12 @@ UKOC - 693378155
                 var userNamesFormatted = '';
                 for(var userNameIndex = 0; userNameIndex < userNames.length; userNameIndex++)
                   userNamesFormatted += userNames[userNameIndex] + ' ';
-                
+
                 return $('<tr/>')
-                    .append( '<td colspan="5">Sum for '+userNamesFormatted+'</td>' )
+                    .append( '<td colspan="4">Sum for '+userNamesFormatted+'</td>' )
                     .append( '<td>'+ addCommas(originalAmountsSum) +'</td>' )
+                    .append( '<td></td>' )
+                    .append( '<td>'+ addCommas(compressedAmountsSum) +'</td>' )
                     .append( '<td/>' );
             },
             dataSrc: 'userGroupId'},
