@@ -25,6 +25,7 @@ namespace UKOC\Seat\SocialistMining\Jobs;
 use Illuminate\Support\Facades\DB;
 use Seat\Eveapi\Jobs\EsiBase;
 use UKOC\Seat\SocialistMining\Models\CompressedOrePriceHistory;
+use Seat\Services\Repositories\Eve\EvePrices;
 
 /**
  * Class Mining.
@@ -32,6 +33,7 @@ use UKOC\Seat\SocialistMining\Models\CompressedOrePriceHistory;
  */
 class CompressedOrePriceHistoryJob extends EsiBase
 {
+    use EvePrices;
     /**
      * @var array
      */
@@ -44,6 +46,7 @@ class CompressedOrePriceHistoryJob extends EsiBase
      */
     public function handle()
     {
+        $this->getHistoricalPrice(28418, '2019-04-01');
         //fetch names of all compressed ores but with some pretty code
         //SELECT inType.typeName FROM seat.invTypes as inType 
         //JOIN seat.invGroups as ingroup on ingroup.groupID = inType.groupID 
