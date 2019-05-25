@@ -11,8 +11,11 @@ UKOC - 693378155
 <div class="col-md-12">
     <!-- Custom Tabs -->
 	<div>
-  <div class="input-group">
-    <input type="text" class="form-control pull-right" id="datefilter">
+    <div class="input-group col-sm-3">
+      <div class="input-group-addon">
+      <i class="fa fa-calendar"></i>
+      </div>
+    <input type="text" class="form-control" id="datefilter">
   </div>
 	</div>
     <div class="nav-tabs-custom">
@@ -61,6 +64,8 @@ UKOC - 693378155
     var character_list = $('table#socialistmining-table').DataTable({
       processing      : true,
       serverSide      : true,
+      paging       : false, 
+      searching       : false, 
       ajax            : {
         url : '{{ route('socialistmining.corp.ledger') }}',
         data: function ( d ) {
