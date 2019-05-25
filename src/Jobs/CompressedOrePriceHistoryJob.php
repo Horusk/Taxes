@@ -46,7 +46,11 @@ class CompressedOrePriceHistoryJob extends EsiBase
      */
     public function handle()
     {
-        $this->getHistoricalPrice(28418, '2019-04-01');
+         $datesAndCompressedTypes = DB::select("SELECT cm.date,inTypeComp.typeId,inTypeComp.typeName FROM character_minings cm join invTypes as inType on inType.typeID = cm.type_id join invTypes as inTypeComp on inTypeComp.typeName like concat('Compressed ',inType.typeName) group by cm.date, inTypeComp.typeId,inTypeComp.typeName order by cm.date,inTypeComp.typeName;");
+
+        foreach($datesAndCompressedTypes as $dateAndType){
+            $this->getHistoricalPrice($dateAndType->typeId, $dateAndType->date);
+        }
         //fetch names of all compressed ores but with some pretty code
         //SELECT inType.typeName FROM seat.invTypes as inType 
         //JOIN seat.invGroups as ingroup on ingroup.groupID = inType.groupID 
