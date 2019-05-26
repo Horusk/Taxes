@@ -75,9 +75,13 @@ UKOC - 693378155
       character_list.draw();      
     });
     $('#toggle-details').click(function(){
-
-      $('tr.odd').toggle();
-      $('tr.even').toggle();     
+      //lazy check
+      if($('tr[class^=player-]').first().is(':hidden')){
+        $('tr[class^=player-]').show();
+      }
+      else{
+        $('tr[class^=player-]').hide();
+      }
     });
 
     $('#fetchavg').click(function(){
