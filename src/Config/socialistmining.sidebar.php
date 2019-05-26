@@ -25,7 +25,7 @@ return [
     // Refer to the web package for a structure reference.
     'socialistmining' => [
         'name' => 'Socialist Minining',
-        'icon' => 'fa-credit-card-alt',
+        'icon' => 'fa-hand-spock-o',
         'route_segment' => 'socialistmining',
         'entries' => [
             [
