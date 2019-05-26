@@ -25,12 +25,12 @@ return [
     // Refer to the web package for a structure reference.
     'socialistmining' => [
         'name' => 'Socialist Minining',
-        'icon' => 'fa-cogs',
+        'icon' => 'fa-credit-card-alt',
         'route_segment' => 'socialistmining',
         'entries' => [
             [
-                'name' => 'Sub Level hurr durr',
-                'icon' => 'fa-th-list',
+                'name' => 'Index',
+                'icon' => 'fa-list',
                 'route' => 'socialistmining'
             ]
         ]

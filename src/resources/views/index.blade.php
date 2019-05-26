@@ -7,7 +7,6 @@
 @inject('request', Illuminate\Http\Request')
 
 @section('full')
-UKOC - 693378155
 <div class="col-md-12">
     <!-- Custom Tabs -->
   <div class="row">
