@@ -148,6 +148,9 @@ class SocialistMiningController extends Controller
 
             return round($item->compressedAmounts,2);
         })
+        ->setRowClass(function ($row) {
+                return 'player-' . $row->userGroupId;
+            })
         ->make();
             //->editColumn('quantity', function ($row) {
                 //return view('web::partials.miningquantity', compact('row'));

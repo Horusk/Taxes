@@ -22,6 +22,7 @@ UKOC - 693378155
     <div class=" col-sm-8">
       <button  class="btn btn-primary" id="fetchavg">Fetch avg</button>
       <button class="btn btn-warning" id="recalculate">Recalculate</button>
+      <button class="btn btn-info" id="toggle-details">Toggle details</button>
     </div>
   </div>
   <form id="orePrices" class="form-inline">
@@ -72,6 +73,11 @@ UKOC - 693378155
 
     $('#recalculate').click(function(){
       character_list.draw();      
+    });
+    $('#toggle-details').click(function(){
+
+      $('tr.odd').toggle();
+      $('tr.even').toggle();     
     });
 
     $('#fetchavg').click(function(){
@@ -162,7 +168,7 @@ UKOC - 693378155
                 for(var userNameIndex = 0; userNameIndex < userNames.length; userNameIndex++)
                   userNamesFormatted += userNames[userNameIndex] + ' ';
 
-                return $('<tr/>')
+                return $('<tr id="sum-player-'+group+'"/>')
                     .append( '<td colspan="3">Sum for '+userNamesFormatted+'</td>' )
                     .append( '<td>'+ addCommas(originalQuantitySum) +'</td>' )
                     .append( '<td>'+ addCommas(originalAmountsSum) +'</td>' )
@@ -183,12 +189,23 @@ UKOC - 693378155
             $('#orePrices').append('<div class="input-group col-sm-3"><label for="ore-' + dataItem.compressedTypeId + '">' + dataItem.compressedTypeName + '</label><input class="form-control" type="number" id="ore-' + dataItem.compressedTypeId + '"/></div>');
           }
         }
-
         console.log(itemTypeIds);
 
         $("img").unveil(100);
         ids_to_names();
       },
+      initComplete: function(){
+
+        var sumElements = $('[id^=sum-player-]');
+        console.log(sumElements);
+        sumElements.each(function(index,element){
+          var playerId = element.id.split('-player-')[1];
+          console.log(playerId);
+          $(element).click(function(){
+              $('tr.player-'+playerId).toggle();
+          });
+        });
+      }
     });
   });
 	function addCommas(nStr)
