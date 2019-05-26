@@ -10,14 +10,22 @@
 UKOC - 693378155
 <div class="col-md-12">
     <!-- Custom Tabs -->
-	<div>
-    <div class="input-group col-sm-3">
-      <div class="input-group-addon">
-      <i class="fa fa-calendar"></i>
-      </div>
-    <input type="text" class="form-control" id="datefilter">
+  <div class="row">
+    <div class=" col-sm-4">
+      <div class="input-group">
+        <div class="input-group-addon">
+          <i class="fa fa-calendar"></i>
+        </div>
+      <input type="text" class="form-control" id="datefilter">
+    </div>
+    </div>
+    <div class=" col-sm-8">
+      <button  class="btn btn-primary" id="fetchavg">Fetch avg</button>
+      <button class="btn btn-warning" id="recalculate">Recalculate</button>
+    </div>
   </div>
-	</div>
+  <form id="orePrices" class="form-inline">
+  </div>
     <div class="nav-tabs-custom">
       <div class="tab-content">
           <table class="table compact table-condensed table-hover table-responsive"
@@ -59,7 +67,34 @@ UKOC - 693378155
           selectedEndDate = end;
           character_list.draw();
         });
-    
+    var itemTypes = [];
+    var itemTypeIds = [];
+
+    $('#recalculate').click(function(){
+      character_list.draw();      
+    });
+
+    $('#fetchavg').click(function(){
+      $.ajax({
+        url:"{{ url('/averageprices') }}",
+        method:'POST',
+        data: {
+          typeIds:itemTypeIds,
+          startDate: selectedStartDate.endOf('day').format('YYYY-MM-DD'),
+          endDate: selectedEndDate.endOf('day').format('YYYY-MM-DD'),
+        },
+        dataType: 'json',
+        success:function(priceResponse){
+          for(var rIndex=0;rIndex < priceResponse.length; rIndex++){
+            var currentResponseItem = priceResponse[rIndex];
+            $('#ore-'+currentResponseItem.typeId).val(currentResponseItem.avgPrice);
+          }
+        },
+        error: function(err){
+          console.log(err);
+        }
+      });
+    });
 
     var character_list = $('table#socialistmining-table').DataTable({
       processing      : true,
@@ -72,15 +107,23 @@ UKOC - 693378155
 		      d.$startDate = selectedStartDate.startOf('day').format('YYYY-MM-DD');
 		      d.$endDate = selectedEndDate.endOf('day').format('YYYY-MM-DD');
 		      d.$get = true;
+          d.$compressedPrices = [];
+          $('[id^=ore-]').each(function(index,element){
+            d.$compressedPrices.push({
+            price: $(element).val(),
+            typeId: element.id.split('-')[1]
+            });
+          });
+
       }},
       columns         : [
         {data: 'userName', name: 'userName'},
         {data: 'typeName', name: 'typeName'},
         {data: 'miningDate', name: 'miningDate'},
-        {data: 'quantity', name: 'quantity'},
-        {data: 'originalAmounts', name: 'originalAmounts'},
-        {data: 'compressed_quantity', name: 'compressed_quantity'},
-        {data: 'compressedAmounts', name: 'compressedAmounts'}
+        {data: 'quantity', name: 'quantity',render: $.fn.dataTable.render.number( ',', '.', 2 )},
+        {data: 'originalAmounts', name: 'originalAmounts',render: $.fn.dataTable.render.number( ',', '.', 2 )},
+        {data: 'compressed_quantity', name: 'compressed_quantity',render: $.fn.dataTable.render.number( ',', '.', 2 )},
+        {data: 'compressedAmounts', name: 'compressedAmounts',render: $.fn.dataTable.render.number( ',', '.', 2 )}
       ],
 	  orderFixed:[0,'asc'],
 	  rowGroup: {
@@ -91,10 +134,22 @@ UKOC - 693378155
                     .reduce( function (a, b) {
                         return (Number(!a?0:a) + Number(!b?0:b)).toFixed(2);
                     }, 0);
+                var originalQuantitySum = rows
+                    .data()
+                    .pluck('quantity')
+                    .reduce( function (a, b) {
+                        return (Number(!a?0:a) + Number(!b?0:b)).toFixed(2);
+                    }, 0);
 
                 var compressedAmountsSum = rows
                     .data()
                     .pluck('compressedAmounts')
+                    .reduce( function (a, b) {
+                        return (Number(!a?0:a) + Number(!b?0:b)).toFixed(2);
+                    }, 0);
+                var compressedQuantitySum = rows
+                    .data()
+                    .pluck('compressed_quantity')
                     .reduce( function (a, b) {
                         return (Number(!a?0:a) + Number(!b?0:b)).toFixed(2);
                     }, 0);
@@ -103,22 +158,34 @@ UKOC - 693378155
                     .data()
                     .pluck('userName')
                     .unique();
-                console.log(userNames);
-                console.log(userNames[0]);
-                console.log(userNames[1]);
                 var userNamesFormatted = '';
                 for(var userNameIndex = 0; userNameIndex < userNames.length; userNameIndex++)
                   userNamesFormatted += userNames[userNameIndex] + ' ';
 
                 return $('<tr/>')
-                    .append( '<td colspan="4">Sum for '+userNamesFormatted+'</td>' )
+                    .append( '<td colspan="3">Sum for '+userNamesFormatted+'</td>' )
+                    .append( '<td>'+ addCommas(originalQuantitySum) +'</td>' )
                     .append( '<td>'+ addCommas(originalAmountsSum) +'</td>' )
-                    .append( '<td></td>' )
-                    .append( '<td>'+ addCommas(compressedAmountsSum) +'</td>' )
+                    .append( '<td>'+ addCommas(compressedQuantitySum) +'</td>' )
+                    .append( '<td id="compressedsum-'+group+'">'+ addCommas(compressedAmountsSum) +'</td>' )
                     .append( '<td/>' );
             },
             dataSrc: 'userGroupId'},
-      drawCallback: function () {
+      drawCallback: function (response) {
+        //clear
+        for(var dataIndex=0;dataIndex < response.json.data.length;dataIndex++){
+          var dataItem = response.json.data[dataIndex];
+                    
+          if(itemTypeIds.filter(function(itemTypeId){
+            return itemTypeId===dataItem.compressedTypeId;
+          }).length === 0){
+            itemTypeIds.push(dataItem.compressedTypeId);
+            $('#orePrices').append('<div class="input-group col-sm-3"><label for="ore-' + dataItem.compressedTypeId + '">' + dataItem.compressedTypeName + '</label><input class="form-control" type="number" id="ore-' + dataItem.compressedTypeId + '"/></div>');
+          }
+        }
+
+        console.log(itemTypeIds);
+
         $("img").unveil(100);
         ids_to_names();
       },

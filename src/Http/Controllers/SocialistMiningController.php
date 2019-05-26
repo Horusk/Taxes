@@ -103,14 +103,19 @@ class SocialistMiningController extends Controller
 		//	$this->getHistoricalPrice($tempItem->typeId, $ledger_entry->miningDate);
 		//}
         $ledger = 
-		CharacterMining::select('character_minings.character_id','originalTypes.typeName as typeName', 
+		CharacterMining::select('character_minings.character_id',
+        'originalTypes.typeName as typeName', 
 		'character_minings.date as miningDate', 
 		DB::raw('SUM(quantity) as quantity'), 
 		DB::raw('ROUND(SUM(quantity)*0.01,2) as compressed_quantity'), 
 		DB::raw('ROUND(SUM(quantity * originalPrice.adjusted_price),2) as originalAmounts'),
         'usr.name as userName',
         'usr.group_id as userGroupId',
-        DB::raw('ROUND(SUM(quantity*0.01 * compressedPrice.adjusted_price),2) as compressedAmounts'))
+        DB::raw('ROUND(SUM(quantity*0.01 * compressedPrice.adjusted_price),2) as compressedAmounts'),
+        'compressedPrice.adjusted_price as compressedAjustedPrice',
+        'compressedPrice.average_price as compressedAveragePrice',
+        'compressedTypes.typeName as compressedTypeName',
+        'compressedTypes.typeID as compressedTypeId')
             ->join('invTypes as originalTypes', 'originalTypes.typeID', 'character_minings.type_id')
             ->leftJoin('historical_prices as originalPrice', function ($join) {
                 $join->on('originalPrice.type_id', '=', 'originalTypes.typeID')
@@ -127,16 +132,23 @@ class SocialistMiningController extends Controller
             //->where('month', 4)
         if($request['$startDate'] && $request['$endDate'])
             $ledger = $ledger->whereBetween('character_minings.date', [$request['$startDate'],$request['$endDate']]);
-
+        $requestPrices = $request['$compressedPrices'];
         $ledger = $ledger->groupBy('userName', 'miningDate', 'typeName');
 
-			//if(!$request->$get)
-				//return $ledger;
-				return DataTables::of($ledger->get())->editColumn('miningDate', function ($user) 
-{
-    //change over here
-    return date('Y-m-d', strtotime($user->miningDate) );
-})->make();
+		return DataTables::of($ledger->get())
+        ->editColumn('miningDate', function ($user){
+            return date('Y-m-d', strtotime($user->miningDate) );
+            })
+        ->editColumn('compressedAmounts', function($item) use ($requestPrices){
+            if(is_array($requestPrices))
+            foreach ($requestPrices as $key => $value) {
+                    if($value['typeId'] == $item->compressedTypeId)
+                        return round($item->compressed_quantity * $value['price'],2);
+            }
+
+            return round($item->compressedAmounts,2);
+        })
+        ->make();
             //->editColumn('quantity', function ($row) {
                 //return view('web::partials.miningquantity', compact('row'));
             //})

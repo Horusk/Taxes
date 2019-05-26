@@ -40,4 +40,8 @@ Route::group([
 		'uses' => 'SocialistMiningController@getSocialistCorporationLedger',
 	]);
 
+    Route::post('/averageprices', [
+        'as'   => 'averageprices',
+        'uses' => 'GetAveragePriceController@getPrices'
+    ]);
 });
