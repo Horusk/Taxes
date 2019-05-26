@@ -133,7 +133,7 @@ class SocialistMiningController extends Controller
         if($request['$startDate'] && $request['$endDate'])
             $ledger = $ledger->whereBetween('character_minings.date', [$request['$startDate'],$request['$endDate']]);
         $requestPrices = $request['$compressedPrices'];
-        $ledger = $ledger->groupBy('userName', 'miningDate', 'typeName');
+        $ledger = $ledger->groupBy('character_id', 'miningDate', 'typeName');
 
 		return DataTables::of($ledger->get())
         ->editColumn('miningDate', function ($user){

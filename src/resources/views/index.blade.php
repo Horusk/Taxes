@@ -106,7 +106,7 @@ UKOC - 693378155
       processing      : true,
       serverSide      : true,
       paging       : false, 
-      searching       : false, 
+      searching       : false,
       ajax            : {
         url : '{{ route('socialistmining.corp.ledger') }}',
         data: function ( d ) {
@@ -129,9 +129,10 @@ UKOC - 693378155
         {data: 'quantity', name: 'quantity',render: $.fn.dataTable.render.number( ',', '.', 2 )},
         {data: 'originalAmounts', name: 'originalAmounts',render: $.fn.dataTable.render.number( ',', '.', 2 )},
         {data: 'compressed_quantity', name: 'compressed_quantity',render: $.fn.dataTable.render.number( ',', '.', 2 )},
-        {data: 'compressedAmounts', name: 'compressedAmounts',render: $.fn.dataTable.render.number( ',', '.', 2 )}
+        {data: 'compressedAmounts', name: 'compressedAmounts',render: $.fn.dataTable.render.number( ',', '.', 2 )},
+        {data: 'userGroupId', name: 'userGroupId', visible: false}
       ],
-	  orderFixed:[0,'asc'],
+	  orderFixed:[7,'asc'],
 	  rowGroup: {
             startRender: function ( rows, group ) {
                 var originalAmountsSum = rows
@@ -176,6 +177,7 @@ UKOC - 693378155
                     .append( '<td id="compressedsum-'+group+'">'+ addCommas(compressedAmountsSum) +'</td>' )
                     .append( '<td/>' );
             },
+            endRender: null,
             dataSrc: 'userGroupId'},
       drawCallback: function (response) {
         //clear
