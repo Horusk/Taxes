@@ -23,6 +23,7 @@ UKOC - 693378155
       <button  class="btn btn-primary" id="fetchavg">Fetch avg</button>
       <button class="btn btn-warning" id="recalculate">Recalculate</button>
       <button class="btn btn-info" id="toggle-details">Toggle details</button>
+      <button class="btn btn-info" id="toggle-evepraisal">Toggle evepraisal mode</button>
     </div>
   </div>
   <form id="orePrices" class="form-inline">
@@ -34,12 +35,13 @@ UKOC - 693378155
             <thead>
             <tr>
               <th>Player</th>
-              <th>typeName</th>
-              <th>miningDate</th>
-              <th>originalQuantity</th>
-              <th>originalAmounts</th>
-              <th>compressedQuantity</th>
-              <th>compressedAmounts</th>
+              <th>type</th>
+              <th>date</th>
+              <th>quantity</th>
+              <th>value</th>
+              <th>compressed type</th>
+              <th>compressed quantity</th>
+              <th>compressed value</th>
               <th></th>
             </tr>
             </thead>
@@ -70,9 +72,17 @@ UKOC - 693378155
         });
     var itemTypes = [];
     var itemTypeIds = [];
-
     $('#recalculate').click(function(){
-      character_list.draw();      
+      character_list.draw();
+    });
+    $('#toggle-evepraisal').click(function(){
+      //lazy check
+      if($('.evepraisalMode').first().is(':hidden')){
+        $('.evepraisalMode').show();
+      }
+      else{
+        $('.evepraisalMode').hide();
+      }
     });
     $('#toggle-details').click(function(){
       //lazy check
@@ -127,16 +137,17 @@ UKOC - 693378155
 
       }},
       columns         : [
-        {data: 'userName', name: 'userName'},
-        {data: 'typeName', name: 'typeName'},
-        {data: 'miningDate', name: 'miningDate'},
-        {data: 'quantity', name: 'quantity',render: $.fn.dataTable.render.number( ',', '.', 2 )},
-        {data: 'originalAmounts', name: 'originalAmounts',render: $.fn.dataTable.render.number( ',', '.', 2 )},
+        {data: 'userName', name: 'userName', class: 'evepraisalMode'},
+        {data: 'typeName', name: 'typeName', class: 'evepraisalMode'},
+        {data: 'miningDate', name: 'miningDate', class: 'evepraisalMode'},
+        {data: 'quantity', name: 'quantity',render: $.fn.dataTable.render.number( ',', '.', 2 ), class: 'evepraisalMode'},
+        {data: 'originalAmounts', name: 'originalAmounts',render: $.fn.dataTable.render.number( ',', '.', 2 ), class: 'evepraisalMode'},
+        {data: 'compressedTypeName', name: 'compressedTypeName'},
         {data: 'compressed_quantity', name: 'compressed_quantity',render: $.fn.dataTable.render.number( ',', '.', 2 )},
-        {data: 'compressedAmounts', name: 'compressedAmounts',render: $.fn.dataTable.render.number( ',', '.', 2 )},
+        {data: 'compressedAmounts', name: 'compressedAmounts',render: $.fn.dataTable.render.number( ',', '.', 2 ), class: 'evepraisalMode'},
         {data: 'userGroupId', name: 'userGroupId', visible: false}
       ],
-	  orderFixed:[7,'asc'],
+	  orderFixed:[8,'asc'],
 	  rowGroup: {
             startRender: function ( rows, group ) {
                 var originalAmountsSum = rows
@@ -174,9 +185,12 @@ UKOC - 693378155
                   userNamesFormatted += userNames[userNameIndex] + ' ';
 
                 return $('<tr id="sum-player-'+group+'"/>')
-                    .append( '<td colspan="3">Sum for '+userNamesFormatted+'</td>' )
-                    .append( '<td>'+ addCommas(originalQuantitySum) +'</td>' )
-                    .append( '<td>'+ addCommas(originalAmountsSum) +'</td>' )
+                    .append( '<td colspan="1">Sum for '+userNamesFormatted+'</td>' )
+                    .append( '<td class="evepraisalMode"></td>' )
+                    .append( '<td class="evepraisalMode"></td>' )
+                    .append( '<td class="evepraisalMode">'+ addCommas(originalQuantitySum) +'</td>' )
+                    .append( '<td class="evepraisalMode">'+ addCommas(originalAmountsSum) +'</td>' )
+                    .append( '<td class="evepraisalMode"></td>' )
                     .append( '<td>'+ addCommas(compressedQuantitySum) +'</td>' )
                     .append( '<td id="compressedsum-'+group+'">'+ addCommas(compressedAmountsSum) +'</td>' )
                     .append( '<td/>' );
