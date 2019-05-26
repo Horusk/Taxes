@@ -189,24 +189,19 @@ UKOC - 693378155
             $('#orePrices').append('<div class="input-group col-sm-3"><label for="ore-' + dataItem.compressedTypeId + '">' + dataItem.compressedTypeName + '</label><input class="form-control" type="number" id="ore-' + dataItem.compressedTypeId + '"/></div>');
           }
         }
-        console.log(itemTypeIds);
 
         $("img").unveil(100);
-        ids_to_names();
-      },
-      initComplete: function(){
-
-        var sumElements = $('[id^=sum-player-]');
-        console.log(sumElements);
-        sumElements.each(function(index,element){
-          var playerId = element.id.split('-player-')[1];
-          console.log(playerId);
-          $(element).click(function(){
-              $('tr.player-'+playerId).toggle();
-          });
-        });
       }
     });
+  character_list.on('draw',function(){
+    var sumElements = $('[id^=sum-player-]');
+          sumElements.each(function(index,element){
+            var playerId = element.id.split('-player-')[1];
+            $(element).click(function(){
+                $('tr.player-'+playerId).toggle();
+            });
+        });
+      });
   });
 	function addCommas(nStr)
 {
