@@ -102,6 +102,10 @@ class SocialistMiningController extends Controller
 		//foreach($tempMiningList as $tempItem){
 		//	$this->getHistoricalPrice($tempItem->typeId, $ledger_entry->miningDate);
 		//}
+        $taxAmount = 0;
+        if(is_numeric($request['$taxAmount']))
+            $taxAmount = floatval($request['$taxAmount']);
+
         $ledger = 
 		CharacterMining::select('character_minings.character_id',
         'originalTypes.typeName as typeName', 
@@ -111,11 +115,12 @@ class SocialistMiningController extends Controller
 		DB::raw('ROUND(SUM(quantity * originalPrice.adjusted_price),2) as originalAmounts'),
         'usr.name as userName',
         'usr.group_id as userGroupId',
-        DB::raw('ROUND(SUM(quantity*0.01 * compressedPrice.adjusted_price),2) as compressedAmounts'),
+         DB::raw('SUM(quantity*0.01 * compressedPrice.average_price) as compressedAmounts'),
         'compressedPrice.adjusted_price as compressedAjustedPrice',
         'compressedPrice.average_price as compressedAveragePrice',
         'compressedTypes.typeName as compressedTypeName',
-        'compressedTypes.typeID as compressedTypeId')
+        'compressedTypes.typeID as compressedTypeId',
+        DB::raw('0 as compressedTax'))
             ->join('invTypes as originalTypes', 'originalTypes.typeID', 'character_minings.type_id')
             ->leftJoin('historical_prices as originalPrice', function ($join) {
                 $join->on('originalPrice.type_id', '=', 'originalTypes.typeID')
@@ -135,6 +140,7 @@ class SocialistMiningController extends Controller
         $requestPrices = $request['$compressedPrices'];
         $ledger = $ledger->groupBy('character_id', 'miningDate', 'typeName');
 
+
 		return DataTables::of($ledger->get())
         ->editColumn('miningDate', function ($user){
             return date('Y-m-d', strtotime($user->miningDate) );
@@ -143,10 +149,19 @@ class SocialistMiningController extends Controller
             if(is_array($requestPrices))
             foreach ($requestPrices as $key => $value) {
                     if($value['typeId'] == $item->compressedTypeId)
-                        return round($item->compressed_quantity * $value['price'],2);
+                        return $item->compressed_quantity * $value['price'];
             }
 
-            return round($item->compressedAmounts,2);
+            return $item->compressedAmounts;
+        })
+        ->editColumn('compressedTax', function($item) use ($requestPrices, $taxAmount){
+            if(is_array($requestPrices))
+            foreach ($requestPrices as $key => $value) {
+                    if($value['typeId'] == $item->compressedTypeId)
+                        return $item->compressed_quantity * $value['price'] * $taxAmount;
+            }
+
+            return $item->compressedAmounts * $taxAmount;
         })
         ->setRowClass(function ($row) {
                 return 'player-' . $row->userGroupId;

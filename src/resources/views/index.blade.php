@@ -9,21 +9,21 @@
 @section('full')
 <div class="col-md-12">
     <!-- Custom Tabs -->
-  <div class="row">
-    <div class=" col-sm-4">
+  <div class="form-inline">
       <div class="input-group">
         <div class="input-group-addon">
           <i class="fa fa-calendar"></i>
         </div>
       <input type="text" class="form-control" id="datefilter">
     </div>
+    <div class="form-group ">
+        <label for="tax-amount">Tax</label>
+        <input type="number" class="form-control" id="tax-amount" min="0" max="1" step="0.001" value="0.1">
     </div>
-    <div class=" col-sm-8">
-      <button  class="btn btn-primary" id="fetchavg">Fetch avg</button>
-      <button class="btn btn-warning" id="recalculate">Recalculate</button>
-      <button class="btn btn-info" id="toggle-details">Toggle details</button>
-      <button class="btn btn-info" id="toggle-evepraisal">Toggle evepraisal mode</button>
-    </div>
+    <button  class="btn btn-primary" id="fetchavg">Fetch avg</button>
+    <button class="btn btn-warning" id="recalculate">Recalculate</button>
+    <button class="btn btn-info" id="toggle-details">Toggle details</button>
+    <button class="btn btn-info" id="toggle-evepraisal">Toggle evepraisal mode</button>
   </div>
   <form id="orePrices" class="form-inline">
   </div>
@@ -41,6 +41,7 @@
               <th>compressed type</th>
               <th>compressed quantity</th>
               <th>compressed value</th>
+              <th>compressed tax</th>
               <th></th>
             </tr>
             </thead>
@@ -127,6 +128,7 @@
 		      d.$endDate = selectedEndDate.endOf('day').format('YYYY-MM-DD');
 		      d.$get = true;
           d.$compressedPrices = [];
+          d.$taxAmount = $('#tax-amount').val();
           $('[id^=ore-]').each(function(index,element){
             d.$compressedPrices.push({
             price: $(element).val(),
@@ -143,42 +145,55 @@
         {data: 'originalAmounts', name: 'originalAmounts',render: $.fn.dataTable.render.number( ',', '.', 2 ), class: 'evepraisalMode'},
         {data: 'compressedTypeName', name: 'compressedTypeName'},
         {data: 'compressed_quantity', name: 'compressed_quantity',render: $.fn.dataTable.render.number( ',', '.', 2 )},
-        {data: 'compressedAmounts', name: 'compressedAmounts',render: $.fn.dataTable.render.number( ',', '.', 2 ), class: 'evepraisalMode'},
-        {data: 'userGroupId', name: 'userGroupId', visible: false}
+        {data: 'compressedAmounts', name: 'compressedAmounts',render: $.fn.dataTable.render.number( ',', '.', 3 ), class: 'evepraisalMode'},
+        {data: 'userGroupId', name: 'userGroupId', visible: false},
+        {data: 'compressedTax', name: 'compressedTax',render: $.fn.dataTable.render.number( ',', '.', 3 ), class: 'evepraisalMode'}
       ],
 	  orderFixed:[8,'asc'],
 	  rowGroup: {
             startRender: function ( rows, group ) {
-                var originalAmountsSum = rows
-                    .data()
-                    .pluck('originalAmounts')
-                    .reduce( function (a, b) {
-                        return (Number(!a?0:a) + Number(!b?0:b)).toFixed(2);
-                    }, 0);
-                var originalQuantitySum = rows
-                    .data()
-                    .pluck('quantity')
-                    .reduce( function (a, b) {
-                        return (Number(!a?0:a) + Number(!b?0:b)).toFixed(2);
-                    }, 0);
 
-                var compressedAmountsSum = rows
-                    .data()
-                    .pluck('compressedAmounts')
-                    .reduce( function (a, b) {
-                        return (Number(!a?0:a) + Number(!b?0:b)).toFixed(2);
-                    }, 0);
-                var compressedQuantitySum = rows
-                    .data()
-                    .pluck('compressed_quantity')
-                    .reduce( function (a, b) {
-                        return (Number(!a?0:a) + Number(!b?0:b)).toFixed(2);
-                    }, 0);
-                //amountsAvg = $.fn.dataTable.render.number(',', '.', 0, '$').display( amountsAvg );
                 var userNames = rows
                     .data()
                     .pluck('userName')
                     .unique();
+
+
+                var originalAmountsSum = rows
+                    .data()
+                    .pluck('originalAmounts')
+                    .reduce( function (a, b) {
+                        return (Number(!a?0:a) + Number(!b?0:b));
+                    }, 0).toFixed(2);
+                var originalQuantitySum = rows
+                    .data()
+                    .pluck('quantity')
+                    .reduce( function (a, b) {
+                        return (Number(!a?0:a) + Number(!b?0:b));
+                    }, 0).toFixed(2);
+
+
+                var compressedQuantitySum = rows
+                    .data()
+                    .pluck('compressed_quantity')
+                    .reduce( function (a, b) {
+                        return (Number(!a?0:a) + Number(!b?0:b));
+                    }, 0).toFixed(2);
+                var compressedAmountsSum = rows
+                    .data()
+                    .pluck('compressedAmounts')
+                    .reduce( function (a, b) {
+                        return (Number(!a?0:a) + Number(!b?0:b));
+                    }, 0).toFixed(2);
+                var compressedTaxSum = rows
+                    .data()
+                    .pluck('compressedTax')
+                    .reduce( function (a, b) {
+                        return (Number(!a?0:a) + Number(!b?0:b));
+                    }, 0).toFixed(2);
+
+                    
+                //amountsAvg = $.fn.dataTable.render.number(',', '.', 0, '$').display( amountsAvg );
                 var userNamesFormatted = '';
                 for(var userNameIndex = 0; userNameIndex < userNames.length; userNameIndex++)
                   userNamesFormatted += userNames[userNameIndex] + ' ';
@@ -192,6 +207,7 @@
                     .append( '<td class="evepraisalMode"></td>' )
                     .append( '<td>'+ addCommas(compressedQuantitySum) +'</td>' )
                     .append( '<td id="compressedsum-'+group+'">'+ addCommas(compressedAmountsSum) +'</td>' )
+                    .append( '<td id="compressedtaxsum-'+group+'">'+ addCommas(compressedTaxSum) +'</td>' )
                     .append( '<td/>' );
             },
             endRender: null,
