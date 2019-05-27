@@ -40,7 +40,8 @@
               <th>value</th>
               <th>compressed type</th>
               <th>compressed quantity</th>
-              <th>compressed value</th>
+              <th>compressed avg price</th>
+              <th>compressed total value</th>
               <th>compressed tax</th>
               <th></th>
             </tr>
@@ -145,11 +146,12 @@
         {data: 'originalAmounts', name: 'originalAmounts',render: $.fn.dataTable.render.number( ',', '.', 2 ), class: 'evepraisalMode'},
         {data: 'compressedTypeName', name: 'compressedTypeName'},
         {data: 'compressed_quantity', name: 'compressed_quantity',render: $.fn.dataTable.render.number( ',', '.', 2 )},
+        {data: 'compressedAveragePrice', name: 'compressedAveragePrice',render: $.fn.dataTable.render.number( ',', '.', 2 ), class: 'evepraisalMode'},
         {data: 'compressedAmounts', name: 'compressedAmounts',render: $.fn.dataTable.render.number( ',', '.', 3 ), class: 'evepraisalMode'},
         {data: 'userGroupId', name: 'userGroupId', visible: false},
         {data: 'compressedTax', name: 'compressedTax',render: $.fn.dataTable.render.number( ',', '.', 3 ), class: 'evepraisalMode'}
       ],
-	  orderFixed:[8,'asc'],
+	  orderFixed:[9,'asc'],
 	  rowGroup: {
             startRender: function ( rows, group ) {
 
@@ -192,7 +194,7 @@
                         return (Number(!a?0:a) + Number(!b?0:b));
                     }, 0).toFixed(2);
 
-                    
+
                 //amountsAvg = $.fn.dataTable.render.number(',', '.', 0, '$').display( amountsAvg );
                 var userNamesFormatted = '';
                 for(var userNameIndex = 0; userNameIndex < userNames.length; userNameIndex++)
@@ -206,6 +208,7 @@
                     .append( '<td class="evepraisalMode">'+ addCommas(originalAmountsSum) +'</td>' )
                     .append( '<td class="evepraisalMode"></td>' )
                     .append( '<td>'+ addCommas(compressedQuantitySum) +'</td>' )
+                    .append( '<td class="evepraisalMode"></td>' )
                     .append( '<td id="compressedsum-'+group+'">'+ addCommas(compressedAmountsSum) +'</td>' )
                     .append( '<td id="compressedtaxsum-'+group+'">'+ addCommas(compressedTaxSum) +'</td>' )
                     .append( '<td/>' );

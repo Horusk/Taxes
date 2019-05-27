@@ -28,6 +28,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Seat\Services\Repositories\Eve\EvePrices;
 use \Datetime;
+use Seat\Services\Models\HistoricalPrices;
 /**
  * Class GetAveragePriceController
  * @package UKOC\Seat\SocialistMining\Http\Controllers
@@ -57,5 +58,27 @@ class GetAveragePriceController extends Controller
 			array_push($result, (object)['typeId'=>$typeId, 'avgPrice'=> round($typeTotal / $numberOfDays ,2)]);
 		}
         return $result;
+    }
+	public function test()
+    {
+         $datesAndCompressedTypes = DB::select("SELECT inTypeComp.typeId FROM character_minings cm join invTypes as inType on inType.typeID = cm.type_id join invTypes as inTypeComp on inTypeComp.typeName like concat('Compressed ',inType.typeName) group by inTypeComp.typeId order by cm.date,inTypeComp.typeName;");
+
+        foreach($datesAndCompressedTypes as $dateAndType){
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, "https://esi.evetech.net/latest/markets/10000002/history/?datasource=tranquility&type_id=". $dateAndType->typeId );
+			// SSL important
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			$output = curl_exec($ch);
+			curl_close($ch);
+			$historicPriceDataForItems = json_decode($output);
+
+	        foreach($historicPriceDataForItems as $historicPriceDataForItem){
+	        	HistoricalPrices::updateOrCreate(
+	        		['type_id'=> $dateAndType->typeId, 'date' => $historicPriceDataForItem->date], 
+	        		['type_id'=> $dateAndType->typeId, 'date' => $historicPriceDataForItem->date, 'average_price' => $historicPriceDataForItem->average, 'adjusted_price' => $historicPriceDataForItem->highest]);
+	        }
+        }
+    	return $datesAndCompressedTypes;
     }
 }

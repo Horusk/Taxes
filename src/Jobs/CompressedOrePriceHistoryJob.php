@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\DB;
 use Seat\Eveapi\Jobs\EsiBase;
 use UKOC\Seat\SocialistMining\Models\CompressedOrePriceHistory;
 use Seat\Services\Repositories\Eve\EvePrices;
+use Seat\Services\Models\HistoricalPrices;
 
 /**
  * Class Mining.
@@ -46,10 +47,24 @@ class CompressedOrePriceHistoryJob extends EsiBase
      */
     public function handle()
     {
-         $datesAndCompressedTypes = DB::select("SELECT cm.date,inTypeComp.typeId,inTypeComp.typeName FROM character_minings cm join invTypes as inType on inType.typeID = cm.type_id join invTypes as inTypeComp on inTypeComp.typeName like concat('Compressed ',inType.typeName) group by cm.date, inTypeComp.typeId,inTypeComp.typeName order by cm.date,inTypeComp.typeName;");
+         
+         $datesAndCompressedTypes = DB::select("SELECT inTypeComp.typeId FROM character_minings cm join invTypes as inType on inType.typeID = cm.type_id join invTypes as inTypeComp on inTypeComp.typeName like concat('Compressed ',inType.typeName) group by inTypeComp.typeId order by cm.date,inTypeComp.typeName;");
 
         foreach($datesAndCompressedTypes as $dateAndType){
-            $this->getHistoricalPrice($dateAndType->typeId, $dateAndType->date);
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "https://esi.evetech.net/latest/markets/10000002/history/?datasource=tranquility&type_id=". $dateAndType->typeId );
+            // SSL important
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            $output = curl_exec($ch);
+            curl_close($ch);
+            $historicPriceDataForItems = json_decode($output);
+
+            foreach($historicPriceDataForItems as $historicPriceDataForItem){
+                HistoricalPrices::updateOrCreate(
+                    ['type_id'=> $dateAndType->typeId, 'date' => $historicPriceDataForItem->date], 
+                    ['type_id'=> $dateAndType->typeId, 'date' => $historicPriceDataForItem->date, 'average_price' => $historicPriceDataForItem->average, 'adjusted_price' => $historicPriceDataForItem->highest]);
+            }
         }
         //fetch names of all compressed ores but with some pretty code
         //SELECT inType.typeName FROM seat.invTypes as inType 
