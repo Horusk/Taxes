@@ -120,7 +120,9 @@ class SocialistMiningController extends Controller
         'compressedPrice.average_price as compressedAveragePrice',
         'compressedTypes.typeName as compressedTypeName',
         'compressedTypes.typeID as compressedTypeId',
-        DB::raw('0 as compressedTax'))
+        DB::raw('0 as compressedTax'),
+        'region.regionID as regionID',
+        'region.regionName as regionName')
             ->join('invTypes as originalTypes', 'originalTypes.typeID', 'character_minings.type_id')
             ->leftJoin('historical_prices as originalPrice', function ($join) {
                 $join->on('originalPrice.type_id', '=', 'originalTypes.typeID')
@@ -131,12 +133,18 @@ class SocialistMiningController extends Controller
                 $join->on('compressedPrice.type_id', '=', 'compressedTypes.typeID')
                      ->on('compressedPrice.date', '=', 'character_minings.date');
             })
-            ->join('users as usr','usr.id', 'character_minings.character_id');
+            ->join('users as usr','usr.id', 'character_minings.character_id')
+            ->join('mapSolarSystems as solarSystem', 'solarSystem.solarSystemID','character_minings.solar_system_id')
+            ->join('mapRegions as region', 'region.regionID','solarSystem.regionID');
             //->where('character_id', $request->input('$corporation_id'))
             //->where('year',2019)
             //->where('month', 4)
         if($request['$startDate'] && $request['$endDate'])
             $ledger = $ledger->whereBetween('character_minings.date', [$request['$startDate'],$request['$endDate']]);
+
+        if($request['$regionIds'])
+            $ledger = $ledger->whereIn('region.regionID', $request['$regionIds']);
+
         $requestPrices = $request['$compressedPrices'];
         $ledger = $ledger->groupBy('character_id', 'miningDate', 'typeName');
 

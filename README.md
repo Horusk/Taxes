@@ -4,6 +4,12 @@
 ## This repository is based on the SeAT plugin example
 //Todo: documentation :)
 
+## Run migrations!
+To be able to run migrations you need to first run *php artisan vendor:publish --force --all*
+
+When that is done you can simply do a *php artisan migrate*
+
+**php artisan commands should be run from the /var/www/seat directory.**
 
 ## Scheduled job development
 

@@ -49,4 +49,16 @@ Route::group([
         'as'   => 'averageprices.test',
         'uses' => 'GetAveragePriceController@test'
     ]);
+    Route::get('/test2', [
+        'as'   => 'regions.test2',
+        'uses' => 'GetRegionsController@regionTest'
+    ]);
+    Route::get('/regions/autocomplete', [
+        'as'   => 'regions.autocomplete',
+        'uses' => 'GetRegionsController@getRegionsAutoComplete'
+    ]);
+    Route::get('/region/{regionName}', [
+        'as'   => 'region.get',
+        'uses' => 'GetRegionsController@getRegion'
+    ]);
 });

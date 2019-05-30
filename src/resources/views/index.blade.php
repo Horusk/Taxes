@@ -26,6 +26,14 @@
       <button class="socialistmining btn btn-info" id="toggle-details">Toggle details</button>
       <button class="socialistmining btn btn-info" id="toggle-evepraisal">Toggle evepraisal mode</button>
     </div>
+    <div id="regions" class="form-inline">
+    <div id="custom-search-input">
+      <div class="input-group">
+          <input id="search-region" name="search" type="text" class="form-control" placeholder="Search regions" />
+      </div>
+      <button class="socialistmining btn btn-primary" id="add-region">Add region filter</button>
+    </div>
+    </div>
     <form id="orePrices" class="form-inline">
     </form>
       <div class="nav-tabs-custom">
@@ -37,6 +45,7 @@
                 <th/>
                 <th>Player</th>
                 <th>Date</th>
+                <th>Region</th>
                 <th>Type</th>
                 <th>Quantity</th>
                 <th>Average price</th>
@@ -56,6 +65,9 @@
 @push('javascript')
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <script>
 
     function ajaxBeforeSend(){
@@ -68,6 +80,32 @@
     };
 
     $(document).ready(function(){
+      $( "#search-region" ).autocomplete({ 
+            source: function(request, response) {
+                $.ajax({
+                url : '{{ route('regions.autocomplete') }}',
+                data: {
+                        term : request.term
+                 },
+                dataType: "json",
+                success: function(data){
+                  data = jQuery.grep(data, function(obj){
+                    var include = true;
+                    regions.forEach(function(region){
+                      if(region.regionName == obj.regionName)
+                        include = false;
+                    });
+                    return include;
+                  });
+                   var resp = $.map(data,function(obj){
+                        return obj.regionName;
+                   });
+                   response(resp);
+                }
+            });
+        },
+        minLength: 1
+     });
       selectedStartDate = moment().subtract(1,'month').startOf('month');
       selectedEndDate = moment().subtract(1,'month').endOf('month');
         $('#datefilter').daterangepicker({
@@ -79,6 +117,39 @@
           selectedEndDate = end;
           character_list.draw();
         });
+
+
+    $('#add-region').click(function(){
+      var regionNameToAdd = $('#search-region').val();
+      var url = '{{ route("region.get", ":id") }}';
+      url = url.replace(':id', regionNameToAdd);
+      $.ajax({
+        url : url,
+        type: 'GET',
+        beforeSend: ajaxBeforeSend,
+        complete: ajaxComplete,
+        success: function(result){
+          regions.push(result);
+          renderRegions();
+        }
+      });
+    });
+    function renderRegions(){
+      regions.forEach(function(region){
+        if($('#region-'+region.regionID).length === 0){
+          $('#regions').append('<button id="region-'+ region.regionID +'" class="label label-primary">'+region.regionName+'</button>');
+          $('#region-'+ region.regionID).click(function(){
+            $('#region-'+ region.regionID).remove();
+            regions = jQuery.grep(regions, function(item){
+              return item.regionID !== region.regionID;
+            });
+            $('#region-'+ region.regionID).remove();
+          });
+        }
+
+      })
+    }
+    var regions = [];
     var itemTypes = [];
     var itemTypeIds = [];
     $('#recalculate').click(function(){
@@ -149,12 +220,17 @@
             typeId: element.id.split('-')[1]
             });
           });
+          data.$regionIds = [];
+          $('[id^=region-]').each(function(index,element){
+            data.$regionIds.push(element.id.split('-')[1]);
+          });
 
       }},
       columns         : [
         {data: 'userGroupId', name: 'userGroupId', visible: false},
         {data: 'userName', name: 'userName', class: 'evepraisalMode'},
         {data: 'miningDate', name: 'miningDate', class: 'evepraisalMode'},
+        {data: 'regionName', name: 'regionName', class: 'evepraisalMode'},
         {data: 'compressedTypeName', name: 'compressedTypeName'},
         {data: 'compressed_quantity', name: 'compressed_quantity',render: $.fn.dataTable.render.number( ',', '.', 2 )},
         {data: 'compressedAveragePrice', name: 'compressedAveragePrice',render: $.fn.dataTable.render.number( ',', '.', 2 ), class: 'evepraisalMode'},
@@ -212,6 +288,7 @@
 
                 return $('<tr id="sum-player-'+group+'"/>')
                     .append( '<td>Sum for '+userNamesFormatted+'</td>' )
+                    .append( '<td class="evepraisalMode"></td>' )
                     .append( '<td class="evepraisalMode"></td>' )
                     .append( '<td class="evepraisalMode"></td>' )
                     .append( '<td>'+ addCommas(compressedQuantitySum) +'</td>' )
