@@ -35,7 +35,7 @@ Route::group([
 		'as'   => 'socialistmining.list.data',
 		'uses' => 'SocialistMiningController@getList',
 	]);
-	Route::get('/socialistmining/getSocialistCorporationLedger', [
+	Route::post('/socialistmining/getSocialistCorporationLedger', [
 		'as'   => 'socialistmining.corp.ledger',
 		'uses' => 'SocialistMiningController@getSocialistCorporationLedger',
 	]);

@@ -7,59 +7,67 @@
 @inject('request', Illuminate\Http\Request')
 
 @section('full')
-<div class="col-md-12">
-    <!-- Custom Tabs -->
-  <div class="form-inline">
-      <div class="input-group">
-        <div class="input-group-addon">
-          <i class="fa fa-calendar"></i>
-        </div>
-      <input type="text" class="form-control" id="datefilter">
-    </div>
-    <div class="form-group ">
-        <label for="tax-amount">Tax</label>
-        <input type="number" class="form-control" id="tax-amount" min="0" max="1" step="0.001" value="0.1">
-    </div>
-    <button  class="btn btn-primary" id="fetchavg">Fetch avg</button>
-    <button class="btn btn-warning" id="recalculate">Recalculate</button>
-    <button class="btn btn-info" id="toggle-details">Toggle details</button>
-    <button class="btn btn-info" id="toggle-evepraisal">Toggle evepraisal mode</button>
-  </div>
-  <form id="orePrices" class="form-inline">
-  </div>
-    <div class="nav-tabs-custom">
-      <div class="tab-content">
-          <table class="table compact table-condensed table-hover table-responsive"
-                 id="socialistmining-table" data-page-length=100>
-            <thead>
-            <tr>
-              <th>Player</th>
-              <th>type</th>
-              <th>date</th>
-              <th>quantity</th>
-              <th>value</th>
-              <th>compressed type</th>
-              <th>compressed quantity</th>
-              <th>compressed avg price</th>
-              <th>compressed total value</th>
-              <th>compressed tax</th>
-              <th></th>
-            </tr>
-            </thead>
-          </table>
+<div class="row" id="socialistmining">
+  <div class="col-md-12">
+      <!-- Custom Tabs -->
+    <div class="form-inline">
+        <div class="input-group">
+          <div class="input-group-addon">
+            <i class="fa fa-calendar"></i>
+          </div>
+        <input type="text" class="form-control" id="datefilter">
       </div>
-      <!-- /.tab-content -->
+      <div class="form-group ">
+          <label for="tax-amount">Tax</label>
+          <input type="number" class="form-control" id="tax-amount" min="0" max="1" step="0.001" value="0.1">
+      </div>
+      <button class="socialistmining btn btn-primary" id="fetchavg">Fetch avg</button>
+      <button class="socialistmining btn btn-warning" id="recalculate">Recalculate</button>
+      <button class="socialistmining btn btn-info" id="toggle-details">Toggle details</button>
+      <button class="socialistmining btn btn-info" id="toggle-evepraisal">Toggle evepraisal mode</button>
     </div>
-    <!-- nav-tabs-custom -->
+    <form id="orePrices" class="form-inline">
+    </form>
+      <div class="nav-tabs-custom">
+        <div class="tab-content">
+            <table class="table compact table-condensed table-hover table-responsive"
+                   id="socialistmining-table" data-page-length=100>
+              <thead>
+              <tr>
+                <th/>
+                <th>Player</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Quantity</th>
+                <th>Average price</th>
+                <th>Total value</th>
+                <th>Tax</th>
+              </tr>
+              </thead>
+            </table>
+        </div>
+        <!-- /.tab-content -->
+      </div>
+      <!-- nav-tabs-custom -->
   </div>
-
+</div>
 @stop
 
 @push('javascript')
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
   <script>
-    $(document).ready(function(){      
+
+    function ajaxBeforeSend(){
+      $('button.socialistmining').addClass("disabled");
+      $('#socialistmining-table_processing').show();
+    };
+    function ajaxComplete(){
+      $('button.socialistmining').removeClass("disabled");
+      $('#socialistmining-table_processing').hide();
+    };
+
+    $(document).ready(function(){
       selectedStartDate = moment().subtract(1,'month').startOf('month');
       selectedEndDate = moment().subtract(1,'month').endOf('month');
         $('#datefilter').daterangepicker({
@@ -113,7 +121,9 @@
         },
         error: function(err){
           console.log(err);
-        }
+        },
+        beforeSend: ajaxBeforeSend,
+        complete: ajaxComplete
       });
     });
 
@@ -121,17 +131,20 @@
       processing      : true,
       serverSide      : true,
       paging       : false, 
+      responsive: false,
       searching       : false,
       ajax            : {
         url : '{{ route('socialistmining.corp.ledger') }}',
-        data: function ( d ) {
-		      d.$startDate = selectedStartDate.startOf('day').format('YYYY-MM-DD');
-		      d.$endDate = selectedEndDate.endOf('day').format('YYYY-MM-DD');
-		      d.$get = true;
-          d.$compressedPrices = [];
-          d.$taxAmount = $('#tax-amount').val();
+        type: 'POST',
+        beforeSend: ajaxBeforeSend,
+        complete: ajaxComplete,
+        data: function ( data ) {
+		      data.$startDate = selectedStartDate.format('YYYY-MM-DD');
+		      data.$endDate = selectedEndDate.format('YYYY-MM-DD');
+          data.$compressedPrices = [];
+          data.$taxAmount = $('#tax-amount').val();
           $('[id^=ore-]').each(function(index,element){
-            d.$compressedPrices.push({
+            data.$compressedPrices.push({
             price: $(element).val(),
             typeId: element.id.split('-')[1]
             });
@@ -139,19 +152,16 @@
 
       }},
       columns         : [
+        {data: 'userGroupId', name: 'userGroupId', visible: false},
         {data: 'userName', name: 'userName', class: 'evepraisalMode'},
-        {data: 'typeName', name: 'typeName', class: 'evepraisalMode'},
         {data: 'miningDate', name: 'miningDate', class: 'evepraisalMode'},
-        {data: 'quantity', name: 'quantity',render: $.fn.dataTable.render.number( ',', '.', 2 ), class: 'evepraisalMode'},
-        {data: 'originalAmounts', name: 'originalAmounts',render: $.fn.dataTable.render.number( ',', '.', 2 ), class: 'evepraisalMode'},
         {data: 'compressedTypeName', name: 'compressedTypeName'},
         {data: 'compressed_quantity', name: 'compressed_quantity',render: $.fn.dataTable.render.number( ',', '.', 2 )},
         {data: 'compressedAveragePrice', name: 'compressedAveragePrice',render: $.fn.dataTable.render.number( ',', '.', 2 ), class: 'evepraisalMode'},
         {data: 'compressedAmounts', name: 'compressedAmounts',render: $.fn.dataTable.render.number( ',', '.', 3 ), class: 'evepraisalMode'},
-        {data: 'userGroupId', name: 'userGroupId', visible: false},
         {data: 'compressedTax', name: 'compressedTax',render: $.fn.dataTable.render.number( ',', '.', 3 ), class: 'evepraisalMode'}
       ],
-	  orderFixed:[9,'asc'],
+	  orderFixed:[0,'asc'],
 	  rowGroup: {
             startRender: function ( rows, group ) {
 
@@ -201,17 +211,14 @@
                   userNamesFormatted += userNames[userNameIndex] + ' ';
 
                 return $('<tr id="sum-player-'+group+'"/>')
-                    .append( '<td colspan="1">Sum for '+userNamesFormatted+'</td>' )
+                    .append( '<td>Sum for '+userNamesFormatted+'</td>' )
                     .append( '<td class="evepraisalMode"></td>' )
-                    .append( '<td class="evepraisalMode"></td>' )
-                    .append( '<td class="evepraisalMode">'+ addCommas(originalQuantitySum) +'</td>' )
-                    .append( '<td class="evepraisalMode">'+ addCommas(originalAmountsSum) +'</td>' )
                     .append( '<td class="evepraisalMode"></td>' )
                     .append( '<td>'+ addCommas(compressedQuantitySum) +'</td>' )
                     .append( '<td class="evepraisalMode"></td>' )
                     .append( '<td id="compressedsum-'+group+'">'+ addCommas(compressedAmountsSum) +'</td>' )
                     .append( '<td id="compressedtaxsum-'+group+'">'+ addCommas(compressedTaxSum) +'</td>' )
-                    .append( '<td/>' );
+                    .append( '</tr>' );
             },
             endRender: null,
             dataSrc: 'userGroupId'},
@@ -227,8 +234,6 @@
             $('#orePrices').append('<div class="input-group col-sm-3"><label for="ore-' + dataItem.compressedTypeId + '">' + dataItem.compressedTypeName + '</label><input class="form-control" type="number" id="ore-' + dataItem.compressedTypeId + '"/></div>');
           }
         }
-
-        $("img").unveil(100);
       }
     });
   character_list.on('draw',function(){
@@ -254,7 +259,11 @@
 	return x1 + x2;
 }
   </script>
-  
-  @include('web::includes.javascript.id-to-name')
-
+  <style type="text/css">
+    #socialistmining-table_processing {
+  top: 0;
+  padding: 10px !important;
+  z-index: 2147483647
+}
+  </script>
   @endpush
