@@ -231,7 +231,7 @@
             return itemTypeId===dataItem.compressedTypeId;
           }).length === 0){
             itemTypeIds.push(dataItem.compressedTypeId);
-            $('#orePrices').append('<div class="input-group col-sm-3"><label for="ore-' + dataItem.compressedTypeId + '">' + dataItem.compressedTypeName + '</label><input class="form-control" type="number" id="ore-' + dataItem.compressedTypeId + '"/></div>');
+            $('#orePrices').append('<div class="input-group col-sm-3"><label for="ore-' + dataItem.compressedTypeId + '">' + dataItem.compressedTypeName + '</label><input class="form-control" type="number" step="0.01"  id="ore-' + dataItem.compressedTypeId + '"/></div>');
           }
         }
       }
