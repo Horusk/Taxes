@@ -131,6 +131,7 @@
         success: function(result){
           regions.push(result);
           renderRegions();
+          character_list.draw();
         }
       });
     });
@@ -144,6 +145,7 @@
               return item.regionID !== region.regionID;
             });
             $('#region-'+ region.regionID).remove();
+            character_list.draw();
           });
         }
 
