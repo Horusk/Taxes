@@ -61,11 +61,11 @@ class GetAveragePriceController extends Controller
     }
 	public function test()
     {
-         $datesAndCompressedTypes = DB::select("SELECT inTypeComp.typeId FROM character_minings cm join invTypes as inType on inType.typeID = cm.type_id join invTypes as inTypeComp on inTypeComp.typeName like concat('Compressed ',inType.typeName) group by inTypeComp.typeId order by cm.date,inTypeComp.typeName;");
+         $datesAndCompressedTypes = DB::select("SELECT cm.type_id FROM character_minings cm  group by cm.type_id;");
 
         foreach($datesAndCompressedTypes as $dateAndType){
 			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, "https://esi.evetech.net/latest/markets/10000002/history/?datasource=tranquility&type_id=". $dateAndType->typeId );
+			curl_setopt($ch, CURLOPT_URL, "https://esi.evetech.net/latest/markets/10000002/history/?datasource=tranquility&type_id=". $dateAndType->type_id );
 			// SSL important
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -75,8 +75,8 @@ class GetAveragePriceController extends Controller
 
 	        foreach($historicPriceDataForItems as $historicPriceDataForItem){
 	        	HistoricalPrices::updateOrCreate(
-	        		['type_id'=> $dateAndType->typeId, 'date' => $historicPriceDataForItem->date], 
-	        		['type_id'=> $dateAndType->typeId, 'date' => $historicPriceDataForItem->date, 'average_price' => $historicPriceDataForItem->average, 'adjusted_price' => $historicPriceDataForItem->highest]);
+	        		['type_id'=> $dateAndType->type_id, 'date' => $historicPriceDataForItem->date], 
+	        		['type_id'=> $dateAndType->type_id, 'date' => $historicPriceDataForItem->date, 'average_price' => $historicPriceDataForItem->average, 'adjusted_price' => $historicPriceDataForItem->highest]);
 	        }
         }
     	return $datesAndCompressedTypes;

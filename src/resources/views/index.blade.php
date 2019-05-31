@@ -313,6 +313,7 @@
             $('#orePrices').append('<div class="input-group col-sm-3"><label for="ore-' + dataItem.compressedTypeId + '">' + dataItem.compressedTypeName + '</label><input class="form-control" type="number" step="0.01"  id="ore-' + dataItem.compressedTypeId + '"/></div>');
           }
         }
+        $('tr[class^=player-]').hide();
       }
     });
   character_list.on('draw',function(){
