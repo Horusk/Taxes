@@ -61,7 +61,7 @@ class GetAveragePriceController extends Controller
     }
 	public function test()
     {
-         $datesAndCompressedTypes = DB::select("SELECT cm.type_id FROM character_minings cm  group by cm.type_id;");
+     	$datesAndCompressedTypes = DB::select("SELECT cm.type_id FROM character_minings cm  group by cm.type_id;");
 
         foreach($datesAndCompressedTypes as $dateAndType){
 			$ch = curl_init();

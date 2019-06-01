@@ -24,6 +24,7 @@ return [
     // Integrating with the SeAT menu is defined here.
     // Refer to the web package for a structure reference.
     'socialistmining' => [
+        'permission' => 'socialistmining.TaxCalculator',
         'name' => 'Socialist Minining',
         'icon' => 'fa-hand-spock-o',
         'route_segment' => 'socialistmining',

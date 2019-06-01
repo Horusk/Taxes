@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // Namespace all of the routes for this package.
 Route::group([
     'namespace'  => 'UKOC\Seat\SocialistMining\Http\Controllers',
-    'middleware' => 'web'
+    'middleware' => ['web','auth','bouncer:socialistmining.TaxCalculator']
 ], function () {
 
     // Your route definitions go here.

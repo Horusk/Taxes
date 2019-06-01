@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 namespace UKOC\Seat\SocialistMining;
 
 use UKOC\Seat\SocialistMining\Commands\CompressedOrePriceHistoryUpdate;
+use UKOC\Seat\SocialistMining\Commands\OrePriceHistoryUpdate;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 
@@ -122,6 +123,7 @@ class SocialistMiningServiceProvider extends ServiceProvider
     {
         $this->commands([
             CompressedOrePriceHistoryUpdate::class,
+            OrePriceHistoryUpdate::class,
         ]);
     }
 }
