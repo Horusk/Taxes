@@ -21,7 +21,8 @@
           <label for="tax-amount">Tax</label>
           <input type="number" class="form-control" id="tax-amount" min="0" max="1" step="0.001" value="0.1">
       </div>
-      <button class="socialistmining btn btn-primary" id="fetchavg">Fetch avg</button>
+      <button class="socialistmining btn btn-primary" id="fetchavg">Fetch ESI average prices</button>
+      <button class="socialistmining btn btn-primary" id="fetchevepraisal">Fetch Evepraisal prices</button>
       <button class="socialistmining btn btn-warning" id="recalculate">Recalculate</button>
       <button class="socialistmining btn btn-info" id="toggle-details">Toggle details</button>
       <button class="socialistmining btn btn-info" id="toggle-evepraisal">Toggle evepraisal mode</button>
@@ -31,7 +32,7 @@
       <div class="input-group">
           <input id="search-region" name="search" type="text" class="form-control" placeholder="Search regions" />
       </div>
-      <button class="socialistmining btn btn-primary" id="add-region">Add region filter</button>
+      <button class="socialistmining btn btn-primary" id="add-region">Add mining region filter</button>
     </div>
     </div>
     <form id="orePrices" class="form-inline">
@@ -53,6 +54,18 @@
                 <th>Tax</th>
               </tr>
               </thead>
+              <tbody></tbody>
+              <tfoot>
+                <th/>
+                <th/>
+                <th/>
+                <th/>
+                <th/>
+                <th/>
+                <th/>
+                <th/>
+                <th/>
+              </tfoot>
             </table>
         </div>
         <!-- /.tab-content -->
@@ -199,6 +212,34 @@
         complete: ajaxComplete
       });
     });
+    $('#fetchevepraisal').click(function(){
+                        console.log(itemTypes);
+      var requestData = $.map(itemTypes,function(obj){
+                        console.log(obj);
+                        return obj.typeName;
+                   });
+      console.log(requestData);
+      $.ajax({
+        url:'{{ url('evepraisalprices') }}',
+        method:'POST',
+        data: {
+          typeNames: requestData
+        },
+        dataType: 'json',
+        success:function(priceResponse){
+          console.log(priceResponse);
+          for(var rIndex=0;rIndex < priceResponse.length; rIndex++){
+            var currentResponseItem = priceResponse[rIndex];
+            $('#ore-'+currentResponseItem.typeId).val(currentResponseItem.price);
+          }
+        },
+        error: function(err){
+          console.log(err);
+        },
+        beforeSend: ajaxBeforeSend,
+        complete: ajaxComplete
+      });
+    });
 
     var character_list = $('table#socialistmining-table').DataTable({
       processing      : true,
@@ -206,6 +247,7 @@
       paging       : false, 
       responsive: false,
       searching       : false,
+      footer       : true,
       ajax            : {
         url : '{{ route('socialistmining.corp.ledger') }}',
         type: 'POST',
@@ -309,11 +351,27 @@
           if(itemTypeIds.filter(function(itemTypeId){
             return itemTypeId===dataItem.compressedTypeId;
           }).length === 0){
+            itemTypes.push({typeName: dataItem.compressedTypeName, typeId: dataItem.compressedTypeId});
             itemTypeIds.push(dataItem.compressedTypeId);
             $('#orePrices').append('<div class="input-group col-sm-3"><label for="ore-' + dataItem.compressedTypeId + '">' + dataItem.compressedTypeName + '</label><input class="form-control" type="number" step="0.01"  id="ore-' + dataItem.compressedTypeId + '"/></div>');
           }
         }
         $('tr[class^=player-]').hide();
+      },
+      footerCallback: function(tfoot, data, start, end, display){
+        var api = this.api();
+          $( api.column(1).footer() ).html('Total');
+          $( api.column(7).footer() ).html(addCommas(
+              api.column(7).data().reduce( function ( a, b ) {
+                        return (Number(!a?0:a) + Number(!b?0:b));
+              }, 0 ).toFixed(2)
+          ));
+        var api = this.api();
+          $( api.column(8).footer() ).html(addCommas(
+              api.column(8).data().reduce( function ( a, b ) {
+                        return (Number(!a?0:a) + Number(!b?0:b));
+              }, 0 ).toFixed(2)
+          ));
       }
     });
   character_list.on('draw',function(){

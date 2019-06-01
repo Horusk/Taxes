@@ -45,6 +45,11 @@ Route::group([
         'uses' => 'GetAveragePriceController@getPrices'
     ]);
 
+    Route::post('/evepraisalprices', [
+        'as'   => 'evepraisalprices',
+        'uses' => 'GetEvepraisalPriceController@getPrices'
+    ]);
+
     Route::get('/test', [
         'as'   => 'averageprices.test',
         'uses' => 'GetAveragePriceController@test'
